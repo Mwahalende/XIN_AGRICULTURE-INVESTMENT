@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Forbidden</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ff5858 0%, #f09819 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .forbidden-container {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 48px 36px;
+      text-align: center;
+      max-width: 420px;
+    }
+    .forbidden-icon {
+      font-size: 80px;
+      color: #e74c3c;
+      margin-bottom: 18px;
+      animation: shake 0.7s infinite alternate;
+    }
+    @keyframes shake {
+      0% { transform: rotate(-7deg); }
+      100% { transform: rotate(7deg); }
+    }
+    .forbidden-title {
+      color: #e74c3c;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .forbidden-message {
+      color: #2c3e50;
+      font-size: 1.1rem;
+      margin-bottom: 24px;
+    }
+    .home-btn {
+      background: linear-gradient(90deg, #f09819 0%, #ff5858 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.2s, transform 0.2s;
+    }
+    .home-btn:hover {
+      background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="forbidden-container">
+    <div class="forbidden-icon">&#9888;</div>
+    <div class="forbidden-title">Access Forbidden</div>
+    <div class="forbidden-message">
+      <strong>Warning:</strong> You are not allowed to access this page directly.<br>
+      Only the owner can view this page from the Owner Page.
+    </div>
+    <button class="home-btn" onclick="window.location.replace('/')">Return Home</button>
+  </div>
+</body>
+</html>

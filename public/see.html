@@ -1,0 +1,2822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Management - XIN Agricultural Investment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+  <style>
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --info: #17a2b8;
+      --info-light: #d1ecf1;
+      --info-dark: #0c5460;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --white: #ffffff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --bg-overlay: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+      --text-color: #111827;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --navbar-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    [data-theme='dark'] {
+      --gray-50: #1a1a1a;
+      --gray-100: #2a2a2a;
+      --gray-200: #333;
+      --gray-300: #444;
+      --gray-400: #555;
+      --gray-500: #666;
+      --gray-600: #777;
+      --gray-700: #888;
+      --gray-800: #999;
+      --gray-900: #aaa;
+      --white: #f0f0f0;
+      --bg-overlay: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8));
+      --text-color: #f0f0f0;
+      --card-bg: rgba(30, 30, 30, 0.95);
+      --navbar-bg: rgba(30, 30, 30, 0.95);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-overlay);
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    /* Animated Background Images */
+    .navbar {
+      background: var(--navbar-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .theme-toggle {
+      background: var(--gray-100);
+      border: 2px solid var(--gray-300);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      color: var(--text-color);
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+      transform: scale(1.1);
+    }
+
+    .container {
+      padding-top: 80px; /* Account for fixed navbar */
+    }
+
+    /* Animated Background Images */
+    .background-slider {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .background-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 2.5s ease-in-out;
+    }
+
+    .background-slide.active {
+      opacity: 1;
+    }
+
+    .background-slide:nth-child(1) {
+      background-image: url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    }
+
+    .background-slide:nth-child(2) {
+      background-image: url('https://images.unsplash.com/photo-1595751711647-84e2e03b662c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    }
+
+    .background-slide:nth-child(3) {
+      background-image: url('https://images.unsplash.com/photo-1586771107445-d3ca888129ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    }
+
+    .background-slide:nth-child(4) {
+      background-image: url('https://images.unsplash.com/photo-1592921870789-04563d492c55?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    }
+
+    .background-slide:nth-child(5) {
+      background-image: url('https://images.unsplash.com/photo-1560493676-04071c5f467b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-subtitle {
+      color: var(--gray-600);
+      font-size: 1.1rem;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--primary);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .back-button:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: 2rem;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .section-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--gray-200);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-content {
+      padding: 1.5rem 2rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+    }
+
+    .table th,
+    .table td {
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--gray-700);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+      background: var(--gray-50);
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 0.875rem;
+      gap: 0.5rem;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: var(--white);
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--gray-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      color: var(--gray-500);
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--gray-200);
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      color: var(--white);
+      z-index: 3000;
+      animation: slideInRight 0.3s ease;
+      max-width: 400px;
+    }
+
+    .notification.success { background: var(--success); }
+    .notification.error { background: var(--danger); }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    /* Business Notes Styles */
+    .add-note-btn {
+      background: linear-gradient(45deg, var(--success), #20c997);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .add-note-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .note-editor {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-xl);
+      border: 2px solid var(--primary);
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .editor-header h3 {
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .close-editor-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .close-editor-btn:hover {
+      transform: scale(1.1);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .note-title-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--gray-300);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      background: var(--white);
+      color: var(--text-color);
+      transition: border-color 0.3s ease;
+    }
+
+    .note-title-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .note-content-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.75rem;
+      border: 2px solid var(--gray-300);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      resize: vertical;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--text-color);
+      transition: border-color 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .note-content-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Attachments Section Styles */
+    .attachments-section {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 2px dashed var(--gray-300);
+      border-radius: 0.75rem;
+      background: var(--gray-50);
+    }
+
+    .attachments-title {
+      color: var(--primary);
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .attachment-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .attachment-btn {
+      background: linear-gradient(45deg, var(--info), #17a2b8);
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .attachment-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .attachment-btn.recording {
+      background: linear-gradient(45deg, var(--danger), #dc3545);
+      animation: pulse 1s infinite;
+    }
+
+    .attached-files {
+      margin-top: 1rem;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .file-item:hover {
+      box-shadow: var(--shadow);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .file-icon {
+      font-size: 1.5rem;
+      width: 30px;
+      text-align: center;
+    }
+
+    .file-details {
+      flex: 1;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.25rem;
+    }
+
+    .file-size {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .preview-btn, .remove-file-btn {
+      padding: 0.25rem 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .preview-btn {
+      background: var(--info);
+      color: white;
+    }
+
+    .remove-file-btn {
+      background: var(--danger);
+      color: white;
+    }
+
+    .preview-btn:hover, .remove-file-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .media-preview {
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .media-preview img, .media-preview video {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 0.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .recording-controls {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+
+    .recording-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .start-recording {
+      background: var(--success);
+      color: white;
+    }
+
+    .stop-recording {
+      background: var(--danger);
+      color: white;
+    }
+
+    .save-recording {
+      background: var(--primary);
+      color: white;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .save-note-btn {
+      background: linear-gradient(45deg, var(--success), #20c997);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .save-note-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .cancel-note-btn {
+      background: var(--gray-500);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .cancel-note-btn:hover {
+      background: var(--gray-600);
+      transform: translateY(-2px);
+    }
+
+    .notes-container {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .note-item {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      border-left: 4px solid var(--primary);
+    }
+
+    .note-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .note-title {
+      color: var(--primary);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .note-date {
+      color: var(--gray-500);
+      font-size: 0.85rem;
+      background: var(--gray-100);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .note-content {
+      color: var(--gray-700);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      margin-bottom: 1rem;
+    }
+
+    .note-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .edit-note-btn, .delete-note-btn {
+      padding: 0.5rem;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .edit-note-btn {
+      background: var(--warning);
+      color: var(--gray-800);
+    }
+
+    .delete-note-btn {
+      background: var(--danger);
+      color: white;
+    }
+
+    .edit-note-btn:hover, .delete-note-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .loading-notes {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Location Styles */
+    .location-info {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--gray-50);
+      border-radius: 0.5rem;
+      border: 2px solid var(--success);
+    }
+
+    .location-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .location-details {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .location-icon {
+      font-size: 1.5rem;
+      color: var(--success);
+    }
+
+    .location-text {
+      flex: 1;
+    }
+
+    .location-coords {
+      font-weight: 600;
+      color: var(--gray-800);
+      font-size: 0.9rem;
+    }
+
+    .location-address {
+      color: var(--gray-600);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .remove-location-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background-color 0.2s;
+    }
+
+    /* Enhanced Map Preview Styles */
+    .note-location {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .location-map-preview {
+      width: 100%;
+      height: 150px;
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--info);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .location-map-preview:hover {
+      box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .location-marker {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: rgba(220, 53, 69, 0.9);
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(220, 53, 69, 0.4);
+      animation: pulse-marker 2s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .location-marker::before {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: rgba(220, 53, 69, 0.25);
+      border-radius: 50%;
+      animation: pulse-shadow 2s infinite;
+      z-index: -1;
+    }
+
+    @keyframes pulse-marker {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes pulse-shadow {
+      0%, 100% { 
+        transform: scale(1); 
+        opacity: 0.6;
+      }
+      50% { 
+        transform: scale(1.3); 
+        opacity: 0.2;
+      }
+    }
+
+    .location-grid-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(23, 162, 184, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 162, 184, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .map-preview-text {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--info);
+      border: 1px solid var(--info);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .remove-location-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .location-btn-loading {
+      background: linear-gradient(45deg, var(--warning), #ffc107) !important;
+      animation: pulse 1s infinite;
+    }
+
+    .note-location {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: linear-gradient(45deg, #e8f5e8, #f0f9f0);
+      border-radius: 0.5rem;
+      border-left: 4px solid var(--success);
+    }
+
+    .note-location-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .note-location-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: var(--success);
+      font-size: 0.9rem;
+    }
+
+    .note-location-coords {
+      font-size: 0.8rem;
+      color: var(--gray-700);
+      margin-bottom: 0.25rem;
+    }
+
+    .note-location-address {
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      margin-bottom: 0.5rem;
+    }
+
+    .view-map-btn {
+      background: linear-gradient(45deg, var(--info), #17a2b8);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .view-map-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .table th,
+      .table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .section-content {
+        padding: 1rem 1.5rem;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+      }
+
+      .footer-section {
+        flex: none;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+
+    /* Footer Styles */
+    .footer {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      margin-top: 4rem;
+      padding: 3rem 0 1rem;
+      position: relative;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #28a745, #007bff, #17a2b8, #ffc107);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-section {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .footer-section h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-section p, .footer-section li {
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      padding: 0.25rem 0;
+    }
+
+    .footer-section ul li::before {
+      content: '🌱';
+      margin-right: 0.5rem;
+    }
+
+    .developer-info {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-top: 1rem;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .developer-info h4 {
+      margin-bottom: 0.5rem;
+      color: #ffc107;
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 2rem 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-bottom p {
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .footer-links a {
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/index.html" class="logo">🌱 XIN Agricultural Investment</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    </div>
+  </nav>
+
+  <!-- Animated Background Slider -->
+  <div class="background-slider">
+    <div class="background-slide active"></div>
+    <div class="background-slide"></div>
+    <div class="background-slide"></div>
+    <div class="background-slide"></div>
+    <div class="background-slide"></div>
+  </div>
+
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">👥 User Management Center</h1>
+      <p class="page-subtitle">View and manage all customer and admin accounts</p>
+    </div>
+
+    <!-- Back Button -->
+    <a href="/index.html" class="back-button">
+      <span>←</span>
+      Back to Dashboard
+    </a>
+
+    <!-- Statistics Overview -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👨‍💼</div>
+        <div class="stat-value" id="adminCount">0</div>
+        <div class="stat-label">Admin Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value" id="customerCount">0</div>
+        <div class="stat-label">Customer Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="totalUsers">0</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+    </div>
+
+    <!-- Business Notes Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>📝</span>
+          Business Notes & Observations
+        </h2>
+        <button class="add-note-btn" onclick="toggleNoteEditor()">
+          <span>➕</span>
+          Add New Note
+        </button>
+      </div>
+      
+      <!-- Note Editor -->
+      <div class="note-editor" id="noteEditor" style="display: none;">
+        <div class="editor-header">
+          <h3>📝 Write Business Note</h3>
+          <button class="close-editor-btn" onclick="toggleNoteEditor()">✖️</button>
+        </div>
+        <div class="editor-content">
+          <input type="text" id="noteTitle" placeholder="Note title (e.g., Market Analysis, Customer Feedback, etc.)" class="note-title-input">
+          <textarea id="noteContent" placeholder="Write your business note here... (observations, insights, plans, feedback, etc.)" class="note-content-textarea"></textarea>
+          
+          <!-- File Attachments Section -->
+          <div class="attachments-section">
+            <h4 class="attachments-title">📎 Attachments</h4>
+            <div class="attachment-options">
+              <!-- File Upload -->
+              <div class="attachment-option">
+                <input type="file" id="fileUpload" multiple accept="*/*" style="display: none;" onchange="handleFileSelect(event)">
+                <button type="button" class="attachment-btn" onclick="document.getElementById('fileUpload').click()">
+                  <span>📁</span>
+                  Upload Files
+                </button>
+              </div>
+              
+              <!-- Camera Capture -->
+              <div class="attachment-option">
+                <button type="button" class="attachment-btn" onclick="capturePhoto()">
+                  <span>📷</span>
+                  Take Photo
+                </button>
+              </div>
+              
+              <!-- Audio Recording -->
+              <div class="attachment-option">
+                <button type="button" class="attachment-btn" id="recordAudioBtn" onclick="toggleAudioRecording()">
+                  <span>🎤</span>
+                  Record Audio
+                </button>
+              </div>
+              
+              <!-- Video Recording -->
+              <div class="attachment-option">
+                <button type="button" class="attachment-btn" onclick="recordVideo()">
+                  <span>🎥</span>
+                  Record Video
+                </button>
+              </div>
+              
+              <!-- Location Capture -->
+              <div class="attachment-option">
+                <button type="button" class="attachment-btn" id="locationBtn" onclick="captureLocation()">
+                  <span>📍</span>
+                  Add Location
+                </button>
+              </div>
+            </div>
+            
+            <!-- Location Display -->
+            <div class="location-info" id="locationInfo" style="display: none;">
+              <div class="location-item">
+                <div class="location-details">
+                  <div class="location-icon">📍</div>
+                  <div class="location-text">
+                    <div class="location-coords" id="locationCoords">Getting location...</div>
+                    <div class="location-address" id="locationAddress">Fetching address...</div>
+                    <div style="margin-top: 0.5rem;">
+                      <button 
+                        id="previewLocationBtn"
+                        onclick="previewLocationOnMap()" 
+                        style="padding: 0.25rem 0.5rem; background: var(--info); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.8rem; margin-right: 0.5rem;"
+                        disabled>
+                        🗺️ Preview on Map
+                      </button>
+                      <small style="color: var(--gray-600);">Location will be saved with this note</small>
+                    </div>
+                  </div>
+                </div>
+                <button class="remove-location-btn" onclick="removeLocation()">🗑️ Remove</button>
+              </div>
+            </div>
+            
+            <!-- Attached Files Display -->
+            <div class="attached-files" id="attachedFiles"></div>
+            
+            <!-- Media Preview/Recording Areas -->
+            <div id="mediaPreview" style="display: none;"></div>
+            <div id="recordingArea" style="display: none;">
+              <video id="cameraPreview" autoplay muted style="width: 100%; max-width: 400px; border-radius: 0.5rem; margin: 1rem 0;"></video>
+              <audio id="audioPreview" controls style="width: 100%; margin: 1rem 0; display: none;"></audio>
+            </div>
+          </div>
+          
+          <div class="editor-actions">
+            <button class="save-note-btn" onclick="saveNote()">
+              <span>💾</span>
+              Save Note
+            </button>
+            <button class="cancel-note-btn" onclick="cancelNote()">
+              <span>❌</span>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Display -->
+      <div class="notes-container" id="notesContainer">
+        <div class="loading-notes">
+          <div class="spinner"></div>
+          Loading business notes...
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Users Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>👨‍💼</span>
+          Administrator Accounts
+        </h2>
+      </div>
+      <div class="section-content">
+        <div class="table-container">
+          <table class="table" id="adminTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Contact Number</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="loading">
+                  <div class="spinner"></div>
+                  Loading administrator accounts...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Users Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>👥</span>
+          Customer Accounts
+        </h2>
+      </div>
+      <div class="section-content">
+        <div class="table-container">
+          <table class="table" id="customerTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email Address</th>
+                <th>Contact Number</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="4" class="loading">
+                  <div class="spinner"></div>
+                  Loading customer accounts...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>🌾 About XIN Agricultural Investment</h3>
+        <p>
+          XIN Agricultural Investment is a Tanzanian company that deals with the buying, selling, and distribution of all types of agricultural products. We work directly with farmers across Tanzania to purchase high-quality produce — including fruits, vegetables, grains, seeds, and other farm products — and make them easily accessible to consumers, retailers, and wholesalers.
+        </p>
+        <p>
+          Our services cover the entire agricultural value chain — from sourcing and packaging to logistics and delivery — ensuring fresh, affordable, and reliable supply for every customer. At XIN, we are committed to promoting local agriculture, empowering farmers, and driving food security and economic growth across the country.
+        </p>
+      </div>
+
+      <div class="footer-section">
+        <h3>🎯 Our Services</h3>
+        <ul>
+          <li>Direct sourcing from local farmers</li>
+          <li>Quality control and packaging</li>
+          <li>Distribution and logistics</li>
+          <li>Wholesale and retail supply</li>
+          <li>Agricultural consulting</li>
+          <li>Farmer support programs</li>
+        </ul>
+
+        <div class="developer-info">
+          <h4>�‍�💻 Developer Info</h4>
+          <p><strong>Leo Tito Mwahalende</strong></p>
+          <p>Full-Stack Developer | Electronics & Communication Engineer</p>
+          <p>📍 Dar es Salaam, Tanzania</p>
+          <p>🎓 BSc in Electronics Science and Communication (UDSM, 2022–2025)</p>
+          <p>📧 leomwahalende@gmail.com | ☎️ +255 686 962 149</p>
+          <p>🔗 LinkedIn | GitHub</p>
+          <p>Developer of this platform, passionate about tech solutions that empower local industries and improve access through innovation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 XIN Agricultural Investment. All rights reserved. | Built with ❤️ in Tanzania</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/admindashboard.html">Admin Portal</a>
+        <a href="/see.html">User Management</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const current = body.getAttribute("data-theme");
+      const newTheme = current === "dark" ? "light" : "dark";
+      body.setAttribute("data-theme", newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-theme', savedTheme);
+    }
+
+    let adminUsers = [];
+    let customerUsers = [];
+    let businessNotes = [];
+    let attachedFiles = [];
+    let mediaRecorder = null;
+    let audioRecorder = null;
+    let recordedChunks = [];
+    let noteLocation = null;
+
+    // Location Functions
+    async function captureLocation() {
+      const btn = document.getElementById('locationBtn');
+      const locationInfo = document.getElementById('locationInfo');
+      
+      btn.classList.add('location-btn-loading');
+      btn.innerHTML = '<span>📍</span>Getting Location...';
+      btn.disabled = true;
+      
+      if (!navigator.geolocation) {
+        showNotification('Geolocation is not supported by this browser.', 'error');
+        resetLocationButton();
+        return;
+      }
+      
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+        
+        const { latitude, longitude } = position.coords;
+        noteLocation = {
+          latitude,
+          longitude,
+          timestamp: new Date().toISOString(),
+          accuracy: position.coords.accuracy
+        };
+        
+        // Display coordinates immediately
+        document.getElementById('locationCoords').textContent = 
+          `📍 ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        document.getElementById('locationAddress').textContent = 'Getting address...';
+        
+        locationInfo.style.display = 'block';
+        
+        // Enable preview button
+        const previewBtn = document.getElementById('previewLocationBtn');
+        previewBtn.disabled = false;
+        
+        // Try to get address using reverse geocoding
+        try {
+          const address = await reverseGeocode(latitude, longitude);
+          document.getElementById('locationAddress').textContent = address;
+          noteLocation.address = address;
+        } catch (addressError) {
+          console.error('Reverse geocoding failed:', addressError);
+          document.getElementById('locationAddress').textContent = 'Address not available';
+        }
+        
+        btn.classList.remove('location-btn-loading');
+        btn.innerHTML = '<span>✅</span>Location Added';
+        btn.disabled = true;
+        
+        showNotification('Location captured successfully!', 'success');
+        
+      } catch (error) {
+        console.error('Location error:', error);
+        let errorMessage = 'Unable to get location. ';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access denied.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out.';
+            break;
+          default:
+            errorMessage += 'Unknown location error.';
+            break;
+        }
+        
+        showNotification(errorMessage, 'error');
+        resetLocationButton();
+      }
+    }
+    
+    async function reverseGeocode(lat, lng) {
+      try {
+        // Using OpenStreetMap Nominatim API (free)
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          return data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        } else {
+          throw new Error('Geocoding API error');
+        }
+      } catch (error) {
+        console.error('Reverse geocoding error:', error);
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      }
+    }
+    
+    function removeLocation() {
+      noteLocation = null;
+      document.getElementById('locationInfo').style.display = 'none';
+      document.getElementById('previewLocationBtn').disabled = true;
+      resetLocationButton();
+      showNotification('Location removed.', 'success');
+    }
+    
+    function resetLocationButton() {
+      const btn = document.getElementById('locationBtn');
+      btn.classList.remove('location-btn-loading');
+      btn.innerHTML = '<span>📍</span>Add Location';
+      btn.disabled = false;
+    }
+    
+    function previewLocationOnMap() {
+      if (noteLocation) {
+        const gmapUrl = `https://www.google.com/maps?q=${noteLocation.latitude},${noteLocation.longitude}&z=16`;
+        window.open(gmapUrl, '_blank', 'noopener,noreferrer');
+        showNotification('Opening location preview in Google Maps...', 'info');
+      }
+    }
+    
+    function openMapLocation(latitude, longitude, address) {
+      // Prioritize OpenStreetMap as requested, with Google Maps as fallback
+      const encodedAddress = encodeURIComponent(address);
+      
+      // Primary: OpenStreetMap URL with marker
+      const osmUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=16#map=16/${latitude}/${longitude}`;
+      
+      // Fallback: Google Maps URL
+      const googleUrl = `https://www.google.com/maps?q=${latitude},${longitude}&z=16&t=h`;
+      
+      try {
+        // Try OpenStreetMap first
+        window.open(osmUrl, '_blank', 'noopener,noreferrer');
+        showNotification(`Opening location in OpenStreetMap: ${address}`, 'success');
+      } catch (error) {
+        console.error('Failed to open OpenStreetMap, trying Google Maps:', error);
+        try {
+          window.open(googleUrl, '_blank', 'noopener,noreferrer');
+          showNotification(`Opened in Google Maps: ${address}`, 'info');
+        } catch (fallbackError) {
+          console.error('Both map services failed:', fallbackError);
+          showNotification('Failed to open map. Please try again.', 'error');
+        }
+      }
+    }
+
+    // Alternative function to create My Maps URL with custom styling
+    function openEnhancedMapLocation(latitude, longitude, address) {
+      // Create a Google My Maps compatible URL with circle overlay
+      const mapData = {
+        center: `${latitude},${longitude}`,
+        zoom: 16,
+        marker: {
+          lat: latitude,
+          lng: longitude,
+          title: address,
+          color: 'red'
+        }
+      };
+      
+      // Create URL with KML overlay for circle
+      const kmlData = `<?xml version="1.0" encoding="UTF-8"?>
+        <kml xmlns="http://www.opengis.net/kml/2.2">
+          <Document>
+            <Style id="circleStyle">
+              <LineStyle><color>ff0000ff</color><width>2</width></LineStyle>
+              <PolyStyle><color>4d0000ff</color></PolyStyle>
+            </Style>
+            <Placemark>
+              <name>${address}</name>
+              <styleUrl>#circleStyle</styleUrl>
+              <Polygon>
+                <outerBoundaryIs>
+                  <LinearRing>
+                    <coordinates>
+                      ${generateCircleCoordinates(latitude, longitude, 100)}
+                    </coordinates>
+                  </LinearRing>
+                </outerBoundaryIs>
+              </Polygon>
+            </Placemark>
+          </Document>
+        </kml>`;
+      
+      const encodedKml = encodeURIComponent(kmlData);
+      const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}&z=16&layer=c&cbll=${latitude},${longitude}&cbp=12,0,,0,5`;
+      
+      window.open(mapsUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    // Generate circle coordinates for KML
+    function generateCircleCoordinates(lat, lng, radiusMeters) {
+      const points = [];
+      const earthRadius = 6371000; // Earth's radius in meters
+      
+      for (let i = 0; i <= 360; i += 10) {
+        const angle = i * Math.PI / 180;
+        const latOffset = (radiusMeters / earthRadius) * (180 / Math.PI);
+        const lngOffset = (radiusMeters / earthRadius) * (180 / Math.PI) / Math.cos(lat * Math.PI / 180);
+        
+        const newLat = lat + latOffset * Math.cos(angle);
+        const newLng = lng + lngOffset * Math.sin(angle);
+        
+        points.push(`${newLng},${newLat},0`);
+      }
+      
+      return points.join(' ');
+    }
+
+    // Copy location coordinates to clipboard
+    async function copyLocationCoords(coords) {
+      try {
+        await navigator.clipboard.writeText(coords);
+        showNotification('Coordinates copied to clipboard!', 'success');
+      } catch (error) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = coords;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('Coordinates copied to clipboard!', 'success');
+      }
+    }
+
+
+    // Open Google Maps with coordinates
+    function openGoogleMap(latitude, longitude, address) {
+      const url = `https://www.google.com/maps?q=${latitude},${longitude}&z=16`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+      showNotification('Opening location in Google Maps...', 'info');
+    }
+
+    // Add location to existing note
+    async function addLocationToNote(noteId) {
+      if (!navigator.geolocation) {
+        showNotification('Geolocation is not supported by this browser.', 'error');
+        return;
+      }
+
+      // Find the note item and add loading indicator
+      const noteElement = document.querySelector(`[data-note-id="${noteId}"]`) || 
+                         Array.from(document.querySelectorAll('.note-item')).find(el => 
+                           el.querySelector('.edit-note-btn')?.onclick?.toString().includes(noteId)
+                         );
+      
+      const locationBtn = Array.from(document.querySelectorAll('.location-note-btn'))
+                               .find(btn => btn.onclick.toString().includes(noteId));
+      
+      if (locationBtn) {
+        locationBtn.innerHTML = '<span>📍</span>Getting Location...';
+        locationBtn.disabled = true;
+        locationBtn.style.background = 'var(--info)';
+      }
+
+      try {
+        showNotification('Getting your current location...', 'info');
+        
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+        const locationData = {
+          latitude,
+          longitude,
+          timestamp: new Date().toISOString(),
+          accuracy: position.coords.accuracy
+        };
+
+        // Try to get address
+        try {
+          const address = await reverseGeocode(latitude, longitude);
+          locationData.address = address;
+        } catch (addressError) {
+          console.error('Address lookup failed:', addressError);
+          locationData.address = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        }
+
+        // Send location data to server
+        const response = await fetch(`/api/business-notes/${noteId}/location`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ location: locationData })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification(`Location added successfully! Address: ${locationData.address}`, 'success');
+          // Reload notes to show the updated note with location
+          loadNotes();
+        } else {
+          throw new Error(result.message || 'Failed to add location');
+        }
+
+      } catch (error) {
+        console.error('Location error:', error);
+        let errorMessage = 'Failed to add location. ';
+        
+        if (error.code) {
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += 'Location access denied. Please allow location access and try again.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += 'Location information unavailable.';
+              break;
+            case error.TIMEOUT:
+              errorMessage += 'Location request timed out. Please try again.';
+              break;
+            default:
+              errorMessage += 'Unknown location error.';
+              break;
+          }
+        } else {
+          errorMessage += error.message || 'Please try again.';
+        }
+        
+        showNotification(errorMessage, 'error');
+        
+        // Reset button
+        if (locationBtn) {
+          locationBtn.innerHTML = '<span>📍</span>Add Location';
+          locationBtn.disabled = false;
+          locationBtn.style.background = 'var(--warning)';
+        }
+      }
+    }
+
+    // File Attachment Functions
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      files.forEach(file => {
+        attachedFiles.push({
+          file: file,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          id: Date.now() + Math.random()
+        });
+      });
+      updateAttachedFilesDisplay();
+    }
+
+    function getFileIcon(fileType) {
+      if (fileType.startsWith('image/')) return '🖼️';
+      if (fileType.startsWith('video/')) return '🎥';
+      if (fileType.startsWith('audio/')) return '🎵';
+      if (fileType.includes('pdf')) return '📄';
+      if (fileType.includes('word') || fileType.includes('doc')) return '📝';
+      if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
+      if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📋';
+      if (fileType.includes('zip') || fileType.includes('rar')) return '🗜️';
+      return '📁';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateAttachedFilesDisplay() {
+      const container = document.getElementById('attachedFiles');
+      
+      if (attachedFiles.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = `
+        <h5 style="color: var(--gray-600); margin: 0 0 0.5rem 0; font-size: 0.9rem;">
+          📎 ${attachedFiles.length} file(s) attached
+        </h5>
+        ${attachedFiles.map(fileItem => `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-icon">${getFileIcon(fileItem.type)}</div>
+              <div class="file-details">
+                <div class="file-name">${fileItem.name}</div>
+                <div class="file-size">${formatFileSize(fileItem.size)}</div>
+              </div>
+            </div>
+            <div class="file-actions">
+              ${fileItem.type.startsWith('image/') || fileItem.type.startsWith('video/') || fileItem.type.startsWith('audio/') ? 
+                `<button class="preview-btn" onclick="previewFile('${fileItem.id}')">👁️ Preview</button>` : ''}
+              <button class="remove-file-btn" onclick="removeFile('${fileItem.id}')">🗑️ Remove</button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function removeFile(fileId) {
+      attachedFiles = attachedFiles.filter(file => file.id != fileId);
+      updateAttachedFilesDisplay();
+    }
+
+    function previewFile(fileId) {
+      const fileItem = attachedFiles.find(file => file.id == fileId);
+      if (!fileItem) return;
+
+      const previewContainer = document.getElementById('mediaPreview');
+      const url = URL.createObjectURL(fileItem.file);
+
+      let previewHTML = '';
+      if (fileItem.type.startsWith('image/')) {
+        previewHTML = `<img src="${url}" alt="Preview" style="max-width: 100%; max-height: 400px; border-radius: 0.5rem;">`;
+      } else if (fileItem.type.startsWith('video/')) {
+        previewHTML = `<video controls style="max-width: 100%; max-height: 400px; border-radius: 0.5rem;"><source src="${url}" type="${fileItem.type}"></video>`;
+      } else if (fileItem.type.startsWith('audio/')) {
+        previewHTML = `<audio controls style="width: 100%;"><source src="${url}" type="${fileItem.type}"></audio>`;
+      }
+
+      previewContainer.innerHTML = `
+        <div class="media-preview">
+          <h5>🔍 Preview: ${fileItem.name}</h5>
+          ${previewHTML}
+          <div style="margin-top: 1rem;">
+            <button class="recording-btn start-recording" onclick="closePreview()">✖️ Close Preview</button>
+          </div>
+        </div>
+      `;
+      previewContainer.style.display = 'block';
+    }
+
+    function closePreview() {
+      document.getElementById('mediaPreview').style.display = 'none';
+    }
+
+    // Camera Capture
+    async function capturePhoto() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const recordingArea = document.getElementById('recordingArea');
+        
+        recordingArea.innerHTML = `
+          <h5>📷 Camera Preview</h5>
+          <video id="cameraPreview" autoplay muted style="width: 100%; max-width: 400px; border-radius: 0.5rem;"></video>
+          <div class="recording-controls">
+            <button class="recording-btn start-recording" onclick="takePhoto()">📸 Take Photo</button>
+            <button class="recording-btn stop-recording" onclick="stopCamera()">❌ Cancel</button>
+          </div>
+        `;
+        
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = stream;
+        recordingArea.style.display = 'block';
+        
+      } catch (error) {
+        console.error('Camera access error:', error);
+        showNotification('Camera access denied or not available.', 'error');
+      }
+    }
+
+    function takePhoto() {
+      const video = document.getElementById('cameraPreview');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      
+      canvas.toBlob(blob => {
+        const fileName = `photo_${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+        attachedFiles.push({
+          file: blob,
+          name: fileName,
+          size: blob.size,
+          type: 'image/png',
+          id: Date.now() + Math.random()
+        });
+        updateAttachedFilesDisplay();
+        stopCamera();
+        showNotification('Photo captured successfully!', 'success');
+      });
+    }
+
+    function stopCamera() {
+      const video = document.getElementById('cameraPreview');
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      document.getElementById('recordingArea').style.display = 'none';
+    }
+
+    // Audio Recording
+    async function toggleAudioRecording() {
+      const btn = document.getElementById('recordAudioBtn');
+      
+      if (!audioRecorder) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioRecorder = new MediaRecorder(stream);
+          recordedChunks = [];
+          
+          audioRecorder.ondataavailable = event => {
+            if (event.data.size > 0) recordedChunks.push(event.data);
+          };
+          
+          audioRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const fileName = `audio_${new Date().toISOString().replace(/[:.]/g, '-')}.webm`;
+            attachedFiles.push({
+              file: blob,
+              name: fileName,
+              size: blob.size,
+              type: 'audio/webm',
+              id: Date.now() + Math.random()
+            });
+            updateAttachedFilesDisplay();
+            showNotification('Audio recorded successfully!', 'success');
+          };
+          
+          audioRecorder.start();
+          btn.classList.add('recording');
+          btn.innerHTML = '<span>⏹️</span>Stop Recording';
+          
+        } catch (error) {
+          console.error('Audio recording error:', error);
+          showNotification('Microphone access denied or not available.', 'error');
+        }
+      } else {
+        audioRecorder.stop();
+        audioRecorder.stream.getTracks().forEach(track => track.stop());
+        audioRecorder = null;
+        btn.classList.remove('recording');
+        btn.innerHTML = '<span>🎤</span>Record Audio';
+      }
+    }
+
+    // Video Recording
+    async function recordVideo() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const recordingArea = document.getElementById('recordingArea');
+        
+        recordingArea.innerHTML = `
+          <h5>🎥 Video Recording</h5>
+          <video id="videoPreview" autoplay muted style="width: 100%; max-width: 400px; border-radius: 0.5rem;"></video>
+          <div class="recording-controls">
+            <button class="recording-btn start-recording" onclick="startVideoRecording()">🔴 Start Recording</button>
+            <button class="recording-btn stop-recording" onclick="stopVideoRecording()">⏹️ Stop & Save</button>
+            <button class="recording-btn" onclick="cancelVideoRecording()">❌ Cancel</button>
+          </div>
+        `;
+        
+        const video = document.getElementById('videoPreview');
+        video.srcObject = stream;
+        recordingArea.style.display = 'block';
+        
+        // Store stream for recording
+        recordingArea.dataset.stream = 'active';
+        recordingArea.stream = stream;
+        
+      } catch (error) {
+        console.error('Video recording error:', error);
+        showNotification('Camera/microphone access denied or not available.', 'error');
+      }
+    }
+
+    function startVideoRecording() {
+      const recordingArea = document.getElementById('recordingArea');
+      const stream = recordingArea.stream;
+      
+      mediaRecorder = new MediaRecorder(stream);
+      recordedChunks = [];
+      
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) recordedChunks.push(event.data);
+      };
+      
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const fileName = `video_${new Date().toISOString().replace(/[:.]/g, '-')}.webm`;
+        attachedFiles.push({
+          file: blob,
+          name: fileName,
+          size: blob.size,
+          type: 'video/webm',
+          id: Date.now() + Math.random()
+        });
+        updateAttachedFilesDisplay();
+        showNotification('Video recorded successfully!', 'success');
+      };
+      
+      mediaRecorder.start();
+      showNotification('Video recording started...', 'success');
+    }
+
+    function stopVideoRecording() {
+      if (mediaRecorder) {
+        mediaRecorder.stop();
+        cancelVideoRecording(); // Clean up UI
+      }
+    }
+
+    function cancelVideoRecording() {
+      const recordingArea = document.getElementById('recordingArea');
+      if (recordingArea.stream) {
+        recordingArea.stream.getTracks().forEach(track => track.stop());
+      }
+      recordingArea.style.display = 'none';
+      if (mediaRecorder) {
+        mediaRecorder = null;
+      }
+    }
+
+    function loadUsers() {
+      fetch('/api/users')
+        .then(res => res.json())
+        .then(data => {
+          adminUsers = data.admins || [];
+          customerUsers = data.customers || [];
+          
+          updateStatistics();
+          renderAdminTable();
+          renderCustomerTable();
+        })
+        .catch(err => {
+          console.error('Failed to load users:', err);
+          showNotification('Failed to load users.', 'error');
+        });
+    }
+
+    function loadNotes() {
+      fetch('/api/business-notes')
+        .then(res => res.json())
+        .then(data => {
+          businessNotes = data.notes || [];
+          renderNotes();
+        })
+        .catch(err => {
+          console.error('Failed to load notes:', err);
+          showNotification('Failed to load business notes.', 'error');
+        });
+    }
+
+    function toggleNoteEditor() {
+      const editor = document.getElementById('noteEditor');
+      const isVisible = editor.style.display !== 'none';
+      
+      if (isVisible) {
+        resetNoteEditor();
+      } else {
+        editor.style.display = 'block';
+        // Focus on title input
+        document.getElementById('noteTitle').focus();
+      }
+    }
+
+    function saveNote() {
+      const title = document.getElementById('noteTitle').value.trim();
+      const content = document.getElementById('noteContent').value.trim();
+      
+      if (!title || !content) {
+        showNotification('Please fill in both title and content.', 'error');
+        return;
+      }
+
+      // Prepare FormData for file uploads
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('date', new Date().toISOString());
+      
+      // Add location data if available with enhanced details
+      if (noteLocation) {
+        // Ensure location has Google Maps link
+        const enhancedLocation = {
+          ...noteLocation,
+          googleMapsUrl: `https://www.google.com/maps?q=${noteLocation.latitude},${noteLocation.longitude}&z=16`,
+          capturedAt: new Date().toISOString()
+        };
+        formData.append('location', JSON.stringify(enhancedLocation));
+      }
+      
+      // Append all attached files
+      attachedFiles.forEach((fileItem, index) => {
+        formData.append('attachments', fileItem.file, fileItem.name);
+      });
+
+      // Show saving message with location info
+      const locationInfo = noteLocation ? 
+        ` with location (${noteLocation.address || noteLocation.latitude.toFixed(4) + ', ' + noteLocation.longitude.toFixed(4)})` : 
+        '';
+      
+      showNotification(`Saving note${locationInfo}...`, 'info');
+
+      fetch('/api/business-notes', {
+        method: 'POST',
+        body: formData // Use FormData instead of JSON for file uploads
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          let successMessage = 'Note saved successfully!';
+          
+          // Enhanced success message with location details
+          if (noteLocation) {
+            successMessage += ` 📍 Location captured: ${noteLocation.address || 'GPS coordinates saved'}`;
+          }
+          if (attachedFiles.length > 0) {
+            successMessage += ` 📎 ${attachedFiles.length} file(s) attached`;
+          }
+          
+          showNotification(successMessage, 'success');
+          
+          // Clear attachments and location
+          attachedFiles = [];
+          updateAttachedFilesDisplay();
+          resetNoteEditor();
+          loadNotes();
+        } else {
+          showNotification(data.message || 'Failed to save note.', 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Failed to save note:', err);
+        showNotification('Failed to save note.', 'error');
+      });
+    }
+
+    function cancelNote() {
+      if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+        resetNoteEditor();
+      }
+    }
+
+    function deleteNote(noteId) {
+      if (confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+        fetch(`/api/business-notes/${noteId}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Note deleted successfully!', 'success');
+            loadNotes();
+          } else {
+            showNotification(data.message || 'Failed to delete note.', 'error');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to delete note:', err);
+          showNotification('Failed to delete note.', 'error');
+        });
+      }
+    }
+
+    function editNote(noteId) {
+      const note = businessNotes.find(n => n._id === noteId);
+      if (!note) {
+        showNotification('Note not found.', 'error');
+        return;
+      }
+
+      // Show the editor
+      const editor = document.getElementById('noteEditor');
+      editor.style.display = 'block';
+      
+      // Fill the form with existing data
+      document.getElementById('noteTitle').value = note.title;
+      document.getElementById('noteContent').value = note.content;
+      
+      // Clear current attachments and show existing ones as "attached"
+      attachedFiles = [];
+      
+      // Show existing attachments (read-only for editing)
+      if (note.attachments && note.attachments.length > 0) {
+        const existingAttachments = note.attachments.map(attachment => ({
+          id: `existing_${attachment._id || Date.now() + Math.random()}`,
+          name: attachment.originalName,
+          size: attachment.size,
+          type: attachment.mimetype,
+          url: attachment.url,
+          isExisting: true
+        }));
+        
+        // Display existing attachments
+        const attachedFilesContainer = document.getElementById('attachedFiles');
+        attachedFilesContainer.innerHTML = `
+          <h5 style="color: var(--gray-600); margin: 0 0 0.5rem 0; font-size: 0.9rem;">
+            📎 ${existingAttachments.length} existing attachment(s)
+          </h5>
+          ${existingAttachments.map(fileItem => `
+            <div class="file-item">
+              <div class="file-info">
+                <div class="file-icon">${getFileIcon(fileItem.type)}</div>
+                <div class="file-details">
+                  <div class="file-name">${fileItem.name}</div>
+                  <div class="file-size">${formatFileSize(fileItem.size)} (existing)</div>
+                </div>
+              </div>
+              <div class="file-actions">
+                ${fileItem.type.startsWith('image/') || fileItem.type.startsWith('video/') || fileItem.type.startsWith('audio/') ? 
+                  `<button class="preview-btn" onclick="viewAttachment('${fileItem.url}', '${fileItem.type}', '${fileItem.name}')">👁️ View</button>` : ''}
+                <button class="remove-file-btn" onclick="alert('Existing files cannot be removed during edit. Delete the note and recreate to remove files.')">🔒 Existing</button>
+              </div>
+            </div>
+          `).join('')}
+          <div style="margin-top: 1rem; padding: 1rem; background: var(--info); color: white; border-radius: 0.5rem; font-size: 0.9rem;">
+            ℹ️ <strong>Note:</strong> You can add new attachments, but existing attachments cannot be modified. The updated note will include both existing and new attachments.
+          </div>
+        `;
+      } else {
+        updateAttachedFilesDisplay();
+      }
+      
+      // Update the save button to handle editing
+      const saveBtn = document.querySelector('.save-note-btn');
+      saveBtn.onclick = () => updateNote(noteId);
+      saveBtn.innerHTML = '<span>💾</span>Update Note';
+      
+      // Update editor title
+      document.querySelector('.editor-header h3').textContent = '✏️ Edit Business Note';
+      
+      // Focus on title input
+      document.getElementById('noteTitle').focus();
+      
+      // Scroll to editor
+      editor.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateNote(noteId) {
+      const title = document.getElementById('noteTitle').value.trim();
+      const content = document.getElementById('noteContent').value.trim();
+      
+      if (!title || !content) {
+        showNotification('Please fill in both title and content.', 'error');
+        return;
+      }
+
+      // Prepare FormData for file uploads (only new attachments)
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      formData.append('date', new Date().toISOString());
+      
+      // Append only new attached files (not existing ones)
+      attachedFiles.forEach((fileItem, index) => {
+        if (!fileItem.isExisting) {
+          formData.append('attachments', fileItem.file, fileItem.name);
+        }
+      });
+
+      fetch(`/api/business-notes/${noteId}`, {
+        method: 'PUT',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showNotification('Note updated successfully!', 'success');
+          resetNoteEditor();
+          loadNotes();
+        } else {
+          showNotification(data.message || 'Failed to update note.', 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Failed to update note:', err);
+        showNotification('Failed to update note.', 'error');
+      });
+    }
+
+    function resetNoteEditor() {
+      const editor = document.getElementById('noteEditor');
+      editor.style.display = 'none';
+      
+      // Clear form and attachments
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteContent').value = '';
+      attachedFiles = [];
+      noteLocation = null; // Reset location
+      updateAttachedFilesDisplay();
+      closePreview();
+      
+      // Hide location info
+      document.getElementById('locationInfo').style.display = 'none';
+      document.getElementById('previewLocationBtn').disabled = true;
+      resetLocationButton();
+      
+      // Reset save button to add mode
+      const saveBtn = document.querySelector('.save-note-btn');
+      saveBtn.onclick = saveNote;
+      saveBtn.innerHTML = '<span>💾</span>Save Note';
+      
+      // Reset editor title
+      document.querySelector('.editor-header h3').textContent = '📝 Write Business Note';
+      
+      // Stop any ongoing recording
+      if (audioRecorder) {
+        audioRecorder.stop();
+        audioRecorder.stream.getTracks().forEach(track => track.stop());
+        audioRecorder = null;
+        const btn = document.getElementById('recordAudioBtn');
+        btn.classList.remove('recording');
+        btn.innerHTML = '<span>🎤</span>Record Audio';
+      }
+      stopCamera();
+      cancelVideoRecording();
+    }
+
+    function renderNotes() {
+      const notesContainer = document.getElementById('notesContainer');
+      
+      if (businessNotes.length === 0) {
+        notesContainer.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+            <h3>No business notes yet</h3>
+            <p>Click "Add New Note" to create your first business note.</p>
+          </div>
+        `;
+        return;
+      }
+
+      notesContainer.innerHTML = businessNotes.map(note => `
+        <div class="note-item">
+          <div class="note-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <h4 class="note-title">📋 ${note.title}</h4>
+              ${note.location ? `
+                <span style="background: var(--info); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 0.25rem;">
+                  📍 Located
+                </span>
+              ` : ''}
+            </div>
+            <div class="note-date">
+              <span>🗓️</span>
+              ${formatDate(note.date)}
+            </div>
+          </div>
+          <div class="note-content">${note.content}</div>
+          
+          ${note.location ? `
+            <div class="note-location" style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%); border: 2px solid var(--info); border-radius: 0.75rem; box-shadow: 0 4px 15px rgba(23, 162, 184, 0.1);">
+              <!-- Interactive OpenStreetMap Embed -->
+              <div style="margin-bottom: 1rem;">
+                <iframe
+                  width="100%"
+                  height="200"
+                  style="border: 2px solid var(--info); border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);"
+                  loading="lazy"
+                  allowfullscreen
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="https://www.google.com/maps?q=${note.location.latitude},${note.location.longitude}&z=16&output=embed">
+                </iframe>
+                <!-- Fallback Map Preview (shown if iframe fails) -->
+                <div class="location-map-preview" onclick="openGoogleMap(${note.location.latitude}, ${note.location.longitude}, '${(note.location.address || 'Location').replace(/'/g, '')}')" title="Click to view on Google Maps" style="display: none;">
+                  <div class="location-grid-bg"></div>
+                  <div class="location-marker">📍</div>
+                  <div class="map-preview-text">🗺️ Click to View on Google Maps</div>
+                </div>
+              </div>
+              
+              <!-- Location Details -->
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <div style="background: var(--info); color: white; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">📍</div>
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: var(--info); margin-bottom: 0.25rem;">Location Details</div>
+                  <div style="font-size: 0.9rem; color: var(--gray-700); line-height: 1.4;">
+                    ${note.location.address || `${note.location.latitude.toFixed(6)}, ${note.location.longitude.toFixed(6)}`}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Coordinates and Actions -->
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.75rem; border-top: 1px solid rgba(23, 162, 184, 0.2);">
+                <div style="font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--gray-600); background: rgba(255, 255, 255, 0.8); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
+                  ${note.location.latitude.toFixed(6)}, ${note.location.longitude.toFixed(6)}
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button 
+                    onclick="openGoogleMap(${note.location.latitude}, ${note.location.longitude}, '${(note.location.address || 'Location').replace(/'/g, '')}')" 
+                    style="padding: 0.5rem 1rem; background: var(--info); color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.25rem;"
+                    onmouseover="this.style.background='#138496'; this.style.transform='translateY(-1px)'"
+                    onmouseout="this.style.background='var(--info)'; this.style.transform='translateY(0)'">
+                    🗺️ Open in Google Maps
+                  </button>
+                  <button 
+                    onclick="copyLocationCoords('${note.location.latitude},${note.location.longitude}')" 
+                    style="padding: 0.5rem; background: var(--success); color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.8rem; transition: all 0.2s ease;"
+                    title="Copy coordinates"
+                    onmouseover="this.style.background='#218838'"
+                    onmouseout="this.style.background='var(--success)'">
+                    📋
+                  </button>
+                  <!-- No OSM button, Google Maps only -->
+                </div>
+              </div>
+            </div>
+          ` : ''}
+          
+          ${note.attachments && note.attachments.length > 0 ? `
+            <div class="note-attachments" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+              <h5 style="color: var(--gray-600); margin: 0 0 0.5rem 0; font-size: 0.9rem;">
+                📎 ${note.attachments.length} attachment(s)
+              </h5>
+              <div class="attachments-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem;">
+                ${note.attachments.map(attachment => `
+                  <div class="attachment-item" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--gray-50); border-radius: 0.5rem; border: 1px solid var(--gray-200);">
+                    <div class="attachment-icon" style="font-size: 1.2rem;">${getFileIcon(attachment.mimetype)}</div>
+                    <div class="attachment-info" style="flex: 1; min-width: 0;">
+                      <div style="font-weight: 600; font-size: 0.9rem; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${attachment.originalName}">${attachment.originalName}</div>
+                      <div style="font-size: 0.8rem; color: var(--gray-500);">${formatFileSize(attachment.size)}</div>
+                    </div>
+                    <div class="attachment-actions" style="display: flex; gap: 0.25rem;">
+                      ${attachment.mimetype.startsWith('image/') || attachment.mimetype.startsWith('video/') || attachment.mimetype.startsWith('audio/') ? 
+                        `<button onclick="viewAttachment('${attachment.url}', '${attachment.mimetype}', '${attachment.originalName}')" style="padding: 0.25rem; background: var(--info); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.8rem;">👁️</button>` : ''}
+                      <button onclick="downloadAttachment('${attachment.url}', '${attachment.originalName}')" style="padding: 0.25rem; background: var(--success); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.8rem;">💾</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          <div class="note-actions" style="margin-top: 1rem;">
+            <button class="edit-note-btn" onclick="editNote('${note._id}')">
+              <span>✏️</span>
+              Edit Note
+            </button>
+            <button class="delete-note-btn" onclick="deleteNote('${note._id}')">
+              <span>🗑️</span>
+              Delete Note
+            </button>
+            ${!note.location ? `
+              <button class="location-note-btn" onclick="addLocationToNote('${note._id}')" style="background: var(--warning); color: white; border: none; padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600; transition: all 0.3s ease; margin-left: 0.5rem;">
+                <span>📍</span>
+                Add Location
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).reverse().join(''); // Show newest first
+    }
+
+    function viewAttachment(url, mimetype, filename) {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); 
+        z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;
+      `;
+      
+      let content = '';
+      if (mimetype.startsWith('image/')) {
+        content = `<img src="${url}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 0.5rem;">`;
+      } else if (mimetype.startsWith('video/')) {
+        content = `<video controls style="max-width: 100%; max-height: 100%; border-radius: 0.5rem;"><source src="${url}"></video>`;
+      } else if (mimetype.startsWith('audio/')) {
+        content = `
+          <div style="text-align: center; color: white;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🎵</div>
+            <h3>${filename}</h3>
+            <audio controls style="width: 100%; max-width: 400px; margin-top: 1rem;"><source src="${url}"></audio>
+          </div>
+        `;
+      }
+      
+      modal.innerHTML = `
+        <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+          ${content}
+          <button onclick="this.closest('div').remove()" style="position: absolute; top: -40px; right: 0; background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">✖️</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+    }
+
+    function downloadAttachment(url, filename) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function updateStatistics() {
+      document.getElementById('adminCount').textContent = adminUsers.length;
+      document.getElementById('customerCount').textContent = customerUsers.length;
+      document.getElementById('totalUsers').textContent = adminUsers.length + customerUsers.length;
+    }
+
+    function renderAdminTable() {
+      const adminTable = document.querySelector('#adminTable tbody');
+      
+      if (adminUsers.length === 0) {
+        adminTable.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280; padding: 2rem;">No administrator accounts found.</td></tr>';
+        return;
+      }
+
+      adminTable.innerHTML = adminUsers.map(admin => `
+        <tr>
+          <td>${admin.name || 'N/A'}</td>
+          <td>${admin.email || 'N/A'}</td>
+          <td>${admin.contact || 'Not provided'}</td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteAdmin('${admin._id}')">
+              🗑️ Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCustomerTable() {
+      const customerTable = document.querySelector('#customerTable tbody');
+      
+      if (customerUsers.length === 0) {
+        customerTable.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280; padding: 2rem;">No customer accounts found.</td></tr>';
+        return;
+      }
+
+      customerTable.innerHTML = customerUsers.map(customer => `
+        <tr>
+          <td>${customer.name || 'N/A'}</td>
+          <td>${customer.email || 'N/A'}</td>
+          <td>${customer.contact || 'Not provided'}</td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteCustomer('${customer._id}')">
+              🗑️ Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteAdmin(id) {
+      if (!confirm("⚠️ Are you sure you want to delete this administrator?\n\nThis action cannot be undone.")) {
+        return;
+      }
+
+      fetch(`/api/admins/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showNotification("Administrator deleted successfully!", 'success');
+            loadUsers(); // Refresh the data
+          } else {
+            showNotification("Failed to delete administrator.", 'error');
+          }
+        })
+        .catch(err => {
+          console.error('Error deleting admin:', err);
+          showNotification("Error occurred while deleting administrator.", 'error');
+        });
+    }
+
+    function deleteCustomer(id) {
+      if (!confirm("⚠️ Are you sure you want to delete this customer?\n\nThis action cannot be undone and will remove all their orders.")) {
+        return;
+      }
+
+      fetch(`/api/customers/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showNotification("Customer deleted successfully!", 'success');
+            loadUsers(); // Refresh the data
+          } else {
+            showNotification("Failed to delete customer.", 'error');
+          }
+        })
+        .catch(err => {
+          console.error('Error deleting customer:', err);
+          showNotification("Error occurred while deleting customer.", 'error');
+        });
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    // Background Image Slider Animation
+    function initBackgroundSlider() {
+      const slides = document.querySelectorAll('.background-slide');
+      let currentSlide = 0;
+
+      function nextSlide() {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+      }
+
+      // Change background every 7 seconds
+      setInterval(nextSlide, 7000);
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTheme(); // Load saved theme
+      loadUsers();
+      loadNotes(); // Load business notes
+      initBackgroundSlider();
+      setTimeout(initMap, 1000); // Initialize map after page loads
+    });
+
+    // Initialize Leaflet map
+    function initMap() {
+      // Coordinates for Isesa Primary School, Tanzania
+      const lat = -8.018727985153813;
+      const lng = 31.674437838394876;
+      
+      const map = L.map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+          position: 'topleft'
+        }
+      }).setView([lat, lng], 15);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      
+      // Add marker for XIN Agricultural Investment office
+      L.marker([lat, lng]).addTo(map)
+        .bindPopup('<b>🌱 XIN Agricultural Investment</b><br>Located at Isesa Primary School<br>Near Maronje, Sumbawanga, Tanzania<br>📞 +255 741 131 500<br>📧 lwingageazi@gmail.com')
+        .openPopup();
+      
+      // Add circle overlay around Isesa Primary School area (near Maronje)
+      L.circle([lat, lng], {
+        color: '#2E7D32',
+        fillColor: '#4CAF50',
+        fillOpacity: 0.3,
+        radius: 200
+      }).addTo(map).bindPopup('<b>Service Area</b><br>Isesa Primary School vicinity<br>Near Maronje, Sumbawanga');
+      
+      // Add a second circle for wider coverage area
+      L.circle([lat, lng], {
+        color: '#1976D2',
+        fillColor: '#2196F3',
+        fillOpacity: 0.1,
+        radius: 500
+      }).addTo(map).bindPopup('<b>Extended Coverage</b><br>Agricultural services available');
+    }
+
+    // Open Google Maps with coordinates
+    function openGoogleMaps() {
+      const lat = -8.018727985153813;
+      const lng = 31.674437838394876;
+      const url = `https://maps.google.com/?q=${lat},${lng}&z=15`;
+      window.open(url, '_blank');
+    }
+
+    // Auto-refresh data every 30 seconds
+    setInterval(() => {
+      loadUsers();
+      loadNotes();
+    }, 30000);
+  </script>
+
+</body>
+</html>

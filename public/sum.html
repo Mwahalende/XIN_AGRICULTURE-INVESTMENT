@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Summary - XIN Agricultural</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .summary-container {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 48px 36px;
+      max-width: 700px;
+      width: 100%;
+    }
+    h1 {
+      color: #2c3e50;
+      font-size: 2.2rem;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    h2 {
+      color: #43c6ac;
+      font-size: 1.3rem;
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    p, ul {
+      color: #34495e;
+      font-size: 1.08rem;
+      line-height: 1.7;
+    }
+    ul {
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+    .section {
+      margin-bottom: 22px;
+    }
+  </style>
+</head>
+<body>
+  <div class="summary-container">
+    <h1>XIN Agricultural Website - Project Summary</h1>
+    <div class="section">
+      <h2>Overview</h2>
+      <p>This website is a full-stack agricultural business management platform for XIN Agricultural. It provides secure admin and customer access, product management, order tracking, and business note-taking, all with a modern UI and robust backend security.</p>
+    </div>
+    <div class="section">
+      <h2>Key Features</h2>
+      <ul>
+        <li><strong>Admin Authentication:</strong> Secure login/register for admins. Only admins can access sensitive pages like the user list (see.html) and admin dashboard.</li>
+        <li><strong>Customer Registration & Login:</strong> Customers can register, log in, and manage their orders.</li>
+        <li><strong>Product Management:</strong> Admins can upload new products (with images), and all users can view available products and prices.</li>
+        <li><strong>Order Management:</strong> Customers can place orders and track their order status. Admins can view and update all orders.</li>
+        <li><strong>Business Notes:</strong> Admins can create, view, and manage business notes for internal use.</li>
+        <li><strong>Location Features:</strong> Google Maps integration for business location and delivery tracking.</li>
+        <li><strong>Security:</strong> Session-based authentication, token-protected admin pages, and forbidden access handling with a custom error page.</li>
+      </ul>
+    </div>
+    <div class="section">
+      <h2>How It Works</h2>
+      <ul>
+        <li><strong>Landing Page:</strong> Users arrive at the home page and can choose to log in/register as a customer or admin.</li>
+        <li><strong>Admin Flow:</strong> After logging in, admins access the dashboard to manage products, view orders, and handle business notes. Access to sensitive pages (like see.html) is protected by session tokens and only available to logged-in admins.</li>
+        <li><strong>Customer Flow:</strong> Customers can register, log in, view products, place orders, and check their order status. They receive email notifications for registration and order updates.</li>
+        <li><strong>Security & Error Handling:</strong> Unauthorized access to admin-only pages redirects users to a custom error page (error.html) with a clear message.</li>
+        <li><strong>Modern UI:</strong> All pages use a clean, responsive design for a professional user experience.</li>
+      </ul>
+    </div>
+    <div class="section">
+      <h2>Technology Stack</h2>
+      <ul>
+        <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+        <li><strong>Backend:</strong> Node.js, Express.js</li>
+        <li><strong>Database:</strong> MongoDB (with Mongoose)</li>
+        <li><strong>Other:</strong> express-session, multer (file uploads), cloudinary (image hosting), Google Maps API, nodemailer (emails)</li>
+      </ul>
+    </div>
+    <div class="section">
+      <h2>Summary</h2>
+      <p>This project delivers a secure, feature-rich, and user-friendly platform for XIN Agricultural, supporting both business operations and customer engagement. All sensitive actions are protected, and the site is designed for easy use by both admins and customers.</p>
+    </div>
+  </div>
+</body>
+</html>

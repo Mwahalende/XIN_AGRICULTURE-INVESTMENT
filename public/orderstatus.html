@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order Status Report - XIN Agricultural Investment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+  <style>
+    :root {
+      --primary: #667eea;
+      --secondary: #764ba2;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --info: #17a2b8;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --white: #ffffff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--gray-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(15px);
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 2px solid var(--gray-300);
+      border-radius: 50%;
+      padding: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--primary);
+      background: var(--gray-50);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem 2rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-title {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--white);
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--white);
+      color: var(--primary);
+      text-decoration: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .back-button:hover {
+      background: var(--gray-50);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--white);
+    }
+
+    .stat-info h3 {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-info p {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+
+    .section {
+      background: var(--white);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--white);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-content {
+      padding: 1.5rem 2rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: 0.75rem;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--gray-700);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .table tbody tr:hover {
+      background: var(--gray-50);
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--gray-500);
+      padding: 3rem;
+      font-style: italic;
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 2rem;
+      color: var(--gray-500);
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gray-300);
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .success-badge {
+      background: var(--success);
+      color: var(--white);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .failed-badge {
+      background: var(--danger);
+      color: var(--white);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .notes-cell {
+      max-width: 200px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/admindashboard.html" class="logo">🌱 XIN Agricultural Investment</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">📊 Order Status Report</h1>
+      <p class="page-subtitle">View successful and failed orders with detailed information</p>
+    </div>
+
+    <a href="/admindashboard.html" class="back-button">
+      <span>←</span>
+      Back to Dashboard
+    </a>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--success);">✅</div>
+        <div class="stat-info">
+          <h3 id="successfulCount">0</h3>
+          <p>Successful Orders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--danger);">❌</div>
+        <div class="stat-info">
+          <h3 id="failedCount">0</h3>
+          <p>Failed Orders</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--info);">💰</div>
+        <div class="stat-info">
+          <h3 id="totalRevenue">Tsh 0</h3>
+          <p>Total Successful Revenue</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--warning);">📦</div>
+        <div class="stat-info">
+          <h3 id="totalOrders">0</h3>
+          <p>Total Orders</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Successful Orders Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>✅</span>
+          Successful Orders
+        </h2>
+      </div>
+      <div class="section-content">
+        <div class="table-container">
+          <div id="successfulOrdersTable">
+            <div class="loading">
+              <div class="spinner"></div>
+              Loading successful orders...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Failed Orders Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>❌</span>
+          Failed Orders
+        </h2>
+      </div>
+      <div class="section-content">
+        <div class="table-container">
+          <div id="failedOrdersTable">
+            <div class="loading">
+              <div class="spinner"></div>
+              Loading failed orders...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let orders = [];
+
+    function toggleTheme() {
+      // Simple theme toggle (can be enhanced)
+      document.body.classList.toggle('dark-theme');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadOrders();
+    });
+
+    async function loadOrders() {
+      try {
+        const response = await fetch('/orders');
+        orders = await response.json();
+        updateStatistics();
+        loadSuccessfulOrders();
+        loadFailedOrders();
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        showError('Failed to load orders');
+      }
+    }
+
+    function updateStatistics() {
+      const successfulOrders = orders.filter(order => order.orderStatus === 'successful');
+      const failedOrders = orders.filter(order => order.orderStatus === 'failed');
+      const totalRevenue = successfulOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+
+      document.getElementById('successfulCount').textContent = successfulOrders.length;
+      document.getElementById('failedCount').textContent = failedOrders.length;
+      document.getElementById('totalRevenue').textContent = `Tsh ${totalRevenue.toLocaleString()}`;
+      document.getElementById('totalOrders').textContent = orders.length;
+    }
+
+    function loadSuccessfulOrders() {
+      const successfulOrders = orders.filter(order => order.orderStatus === 'successful');
+      const container = document.getElementById('successfulOrdersTable');
+
+      if (successfulOrders.length === 0) {
+        container.innerHTML = '<div class="empty-state">No successful orders found.</div>';
+        return;
+      }
+
+      const tableHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Customer</th>
+              <th>Email</th>
+              <th>Quantity</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${successfulOrders.map(order => `
+              <tr>
+                <td><strong>${order.product}</strong></td>
+                <td>${order.name || 'N/A'}</td>
+                <td>${order.email}</td>
+                <td>${order.quantity}</td>
+                <td><strong>Tsh ${(order.amount || 0).toLocaleString()}</strong></td>
+                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                <td class="notes-cell">${order.notes || 'No notes'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = tableHTML;
+    }
+
+    function loadFailedOrders() {
+      const failedOrders = orders.filter(order => order.orderStatus === 'failed');
+      const container = document.getElementById('failedOrdersTable');
+
+      if (failedOrders.length === 0) {
+        container.innerHTML = '<div class="empty-state">No failed orders found.</div>';
+        return;
+      }
+
+      const tableHTML = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Customer</th>
+              <th>Email</th>
+              <th>Quantity</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${failedOrders.map(order => `
+              <tr>
+                <td><strong>${order.product}</strong></td>
+                <td>${order.name || 'N/A'}</td>
+                <td>${order.email}</td>
+                <td>${order.quantity}</td>
+                <td>Tsh ${(order.amount || 0).toLocaleString()}</td>
+                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                <td class="notes-cell">${order.notes || 'No notes'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = tableHTML;
+    }
+
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--danger);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow-lg);
+        z-index: 1001;
+      `;
+      errorDiv.textContent = message;
+      document.body.appendChild(errorDiv);
+
+      setTimeout(() => {
+        document.body.removeChild(errorDiv);
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
