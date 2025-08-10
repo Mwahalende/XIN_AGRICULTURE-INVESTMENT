@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Registration - XIN Agricultural Investment</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+  <style>
+    :root {
+      --primary: #28a745;
+      --secondary: #007bff;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --success: #28a745;
+      --white: #ffffff;
+      --gray-100: #f8f9fa;
+      --gray-200: #e9ecef;
+      --gray-300: #dee2e6;
+      --gray-800: #495057;
+      --gray-900: #343a40;
+      --shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+      --bg-color: #fefefe;
+      --text-color: #343a40;
+      --card-bg: #ffffff;
+      --border-color: #ccc;
+    }
+
+    [data-theme='dark'] {
+      --bg-color: #121212;
+      --text-color: #f0f0f0;
+      --card-bg: #1e1e1e;
+      --border-color: #555;
+      --gray-100: #2a2a2a;
+      --gray-200: #333;
+      --gray-300: #444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      transition: all 0.3s ease;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    [data-theme='dark'] .navbar {
+      background: rgba(30, 30, 30, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .theme-toggle {
+      background: var(--gray-100);
+      border: 2px solid var(--gray-300);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      color: var(--text-color);
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--white);
+      transform: scale(1.1);
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--text-color);
+      margin-bottom: 2rem;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 30px auto;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 0.9em;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .navbar-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .container {
+        padding: 10px;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+      }
+
+      .footer-section {
+        flex: none;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+    }
+
+    /* Footer Styles */
+    .footer {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--white);
+      margin-top: 4rem;
+      padding: 3rem 0 1rem;
+      position: relative;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #28a745, #007bff, #17a2b8, #ffc107);
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-section {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .footer-section h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-section p, .footer-section li {
+      line-height: 1.7;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      padding: 0.25rem 0;
+    }
+
+    .footer-section ul li::before {
+      content: '🌱';
+      margin-right: 0.5rem;
+    }
+
+    .developer-info {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-top: 1rem;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .developer-info h4 {
+      margin-bottom: 0.5rem;
+      color: #ffc107;
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 2rem 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-bottom p {
+      margin: 0;
+      opacity: 0.8;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .footer-links a {
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="/index.html" class="logo">🌱 XIN Agricultural Investment</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Register as Customer</h2>
+  <form id="registerForm">
+    <input type="text" name="name" placeholder="Full Name" required />
+    <input type="email" name="email" placeholder="Email Address" required />
+    <input type="text" name="contact" placeholder="Phone Number (e.g. 07xxxxxxx or +2557xxxxxxx)" required />
+    <input type="password" name="password" placeholder="Password (8 letters/numbers)" required />
+    <button type="submit">Register</button>
+    <p class="error" id="errorMsg"></p>
+    <a href="/login.html" style="display:block;text-align:right;font-size:0.9em;">Back to Login</a>
+    <a href="#" id="showForgot" style="display:block;text-align:right;font-size:0.9em;">Forgot Password?</a>
+  </form>
+
+  <form id="forgotForm" style="display:none;">
+    <input type="email" name="email" placeholder="Enter your email" required />
+    <button type="submit">Reset Password</button>
+    <p class="error" id="forgotMsg"></p>
+    <a href="#" id="backToRegister" style="display:block;text-align:right;font-size:0.9em;">Back to Register</a>
+  </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>🌾 About XIN Agricultural Investment</h3>
+        <p>
+          XIN Agricultural Investment is a Tanzanian company specializing in the buying, selling, and distribution of all types of agricultural products. We work directly with farmers across Tanzania to source high-quality produce — including fruits, vegetables, grains, seeds, and other farm products — and make them easily accessible to consumers, retailers, and wholesalers.
+        </p>
+        <p>
+          Our services cover the entire agricultural value chain — from sourcing and packaging to logistics and delivery — ensuring fresh, affordable, and reliable supply for every customer. At XIN, we are committed to promoting local agriculture, empowering farmers, and driving food security and economic growth across the country.
+        </p>
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 0.5rem;">
+          <p style="margin-bottom: 0.5rem;"><strong>📧 Email:</strong> lwingageazi@gmail.com</p>
+          <p style="margin-bottom: 0.5rem;"><strong>📞 Phone:</strong> +255 741 131 500 (WhatsApp Available)</p>
+          <p><strong>📍 Office Location:</strong> Isesa Primary School, Sumbawanga, Tanzania</p>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h3>🗺️ Our Location</h3>
+        <div style="position: relative; margin-bottom: 1rem;">
+          <div id="map" style="width: 100%; height: 300px; border-radius: 0.5rem; overflow: hidden;"></div>
+          <div style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+            <button onclick="openGoogleMaps()" style="background: #4285f4; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+              🌍 View in Google Maps
+            </button>
+          </div>
+        </div>
+        
+        <h3>🎯 Our Services</h3>
+        <ul>
+          <li>Direct sourcing from local farmers</li>
+          <li>Quality control and packaging</li>
+          <li>Distribution and logistics</li>
+          <li>Wholesale and retail supply</li>
+          <li>Agricultural consulting</li>
+          <li>Farmer support programs</li>
+        </ul>
+
+        <div class="developer-info">
+          <h4>👨‍💻 Developer Info</h4>
+          <p><strong>Leo Tito Mwahalende</strong></p>
+          <p>Full-Stack Developer | Electronics & Communication Engineer</p>
+          <p>📍 Dar es Salaam, Tanzania</p>
+          <p>🎓 BSc in Electronics Science and Communication (UDSM, 2022–2025)</p>
+          <p>📧 leomwahalende@gmail.com | ☎️ +255 686 962 149</p>
+          <p>🔗 LinkedIn | GitHub</p>
+          <p>Developer of this platform, passionate about tech solutions that empower local industries and improve access through innovation.</p>
+        </div>
+      </div>
+    </div>
+          <p>🎓 BSc in Electronics Science and Communication (UDSM, 2022–2025)</p>
+          <p>📧 leomwahalende@gmail.com | ☎️ +255 686 962 149</p>
+          <p>🔗 LinkedIn | GitHub</p>
+          <p>Developer of this platform, passionate about tech solutions that empower local industries and improve access through innovation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 XIN Agricultural Investment. All rights reserved. | Built with ❤️ in Tanzania</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/login.html">Login</a>
+        <a href="/admindashboard.html">Admin Portal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const current = body.getAttribute("data-theme");
+      const newTheme = current === "dark" ? "light" : "dark";
+      body.setAttribute("data-theme", newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.body.setAttribute('data-theme', savedTheme);
+      
+      // Initialize map
+      initMap();
+    });
+
+    // Initialize Leaflet map
+    function initMap() {
+      // Coordinates for Isesa Primary School, Tanzania
+      const lat = -8.018727985153813;
+      const lng = 31.674437838394876;
+      
+      const map = L.map('map', {
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+          position: 'topleft'
+        }
+      }).setView([lat, lng], 15);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      
+      // Add marker for XIN Agricultural Investment office
+      L.marker([lat, lng]).addTo(map)
+        .bindPopup('<b>🌱 XIN Agricultural Investment</b><br>Located at Isesa Primary School<br>Near Maronje, Sumbawanga, Tanzania<br>📞 +255 741 131 500<br>📧 lwingageazi@gmail.com')
+        .openPopup();
+      
+      // Add circle overlay around Isesa Primary School area (near Maronje)
+      L.circle([lat, lng], {
+        color: '#2E7D32',
+        fillColor: '#4CAF50',
+        fillOpacity: 0.3,
+        radius: 200
+      }).addTo(map).bindPopup('<b>Service Area</b><br>Isesa Primary School vicinity<br>Near Maronje, Sumbawanga');
+      
+      // Add a second circle for wider coverage area
+      L.circle([lat, lng], {
+        color: '#1976D2',
+        fillColor: '#2196F3',
+        fillOpacity: 0.1,
+        radius: 500
+      }).addTo(map).bindPopup('<b>Extended Coverage</b><br>Agricultural services available');
+    }
+
+    // Open Google Maps with coordinates
+    function openGoogleMaps() {
+      const lat = -8.018727985153813;
+      const lng = 31.674437838394876;
+      const url = `https://maps.google.com/?q=${lat},${lng}&z=15`;
+      window.open(url, '_blank');
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const contact = form.contact.value.trim();
+      const password = form.password.value;
+
+      const errorEl = document.getElementById('errorMsg');
+      errorEl.textContent = '';
+
+      // Basic validations
+      if (!/^[a-zA-Z0-9]{8,}$/.test(password)) {
+        errorEl.textContent = "Password must be at least 8 letters/numbers (no special characters).";
+        return;
+      }
+      if (!email.match(/^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/)) {
+        errorEl.textContent = "Invalid email format.";
+        return;
+      }
+      if(!contact.match(/^(\+?255|0)?(6|7)[0-9]{8}$/)){
+        errorEl.textContent = "Invalid Tanzania phone number format.";
+        return;
+      }
+
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({name, email, contact, password})
+      });
+      const result = await res.json();
+      if(result.success){
+        alert('Registration successful! Please login.');
+        window.location.href = '/login.html';
+      } else {
+        errorEl.textContent = result.message || 'Registration failed.';
+      }
+    });
+
+    document.getElementById('showForgot').onclick = function(e) {
+      e.preventDefault();
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('forgotForm').style.display = 'block';
+    };
+    document.getElementById('backToRegister').onclick = function(e) {
+      e.preventDefault();
+      document.getElementById('forgotForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+    };
+    document.getElementById('forgotForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      const msg = document.getElementById('forgotMsg');
+      msg.textContent = '';
+      const res = await fetch('/user-forgot-password', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email})
+      });
+      const result = await res.json();
+      msg.textContent = result.message || (result.success ? 'Check your email for new password.' : 'Failed.');
+    });
+  </script>
+</body>
+</html>
