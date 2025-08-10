@@ -1,1 +1,4 @@
+# Use MongoDB for session storage in production
+node_modules/
+.env
 
