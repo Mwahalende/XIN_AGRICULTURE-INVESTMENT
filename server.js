@@ -4,11 +4,12 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const nodemailer = require('nodemailer');
-const fs = require('fs');
+// const fs = require('fs'); // No longer needed for uploads
 const cron = require('node-cron');
 const cloudinary = require('cloudinary').v2;
 const cors = require('cors');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -16,10 +17,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Serve all static files except see.html
+
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions'
+  })
 }));
 
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -113,11 +119,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   }
 }));
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("mongo connected"))
@@ -329,34 +331,36 @@ app.post('/login', async (req, res) => {
   res.json({ success: true, user: { name: user.name, email: user.email, contact: user.contact } });
 });
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads'),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.post('/uploadproduct', upload.single('media'), async (req, res) => {
   try {
     const { name, amount, description } = req.body;
-    const result = await cloudinary.uploader.upload(req.file.path, { resource_type: "auto" });
-    await Product.create({ name, amount, description, url: result.secure_url });
-
-    const customers = await Customer.find();
-    customers.forEach(c => {
-      sendEmail(c.email, 'New Product Announcement', `
-        <h2 style="color:#43c6ac;">New Product: ${name}</h2>
-        <p>Dear valued customer,</p>
-        <p>We are pleased to announce a new product now available at XIN Investment:</p>
-        <ul>
-          <li><b>Product:</b> ${name}</li>
-          <li><b>Price:</b> ${amount} TZS</li>
-        </ul>
-        <img src="${result.secure_url}" style="width:200px;border-radius:8px;margin:16px 0;"/>
-        <p><a href="http://your-website.com" style="color:#43c6ac;font-weight:bold;">Visit our website to learn more & order now!</a></p>
-      `);
+    if (!req.file) return res.status(400).send('No file uploaded');
+    // Upload to Cloudinary from buffer
+    const stream = cloudinary.uploader.upload_stream({ resource_type: "auto" }, async (error, result) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).send('Upload failed');
+      }
+      await Product.create({ name, amount, description, url: result.secure_url });
+      const customers = await Customer.find();
+      customers.forEach(c => {
+        sendEmail(c.email, 'New Product Announcement', `
+          <h2 style=\"color:#43c6ac;\">New Product: ${name}</h2>
+          <p>Dear valued customer,</p>
+          <p>We are pleased to announce a new product now available at XIN Investment:</p>
+          <ul>
+            <li><b>Product:</b> ${name}</li>
+            <li><b>Price:</b> ${amount} TZS</li>
+          </ul>
+          <img src=\"${result.secure_url}\" style=\"width:200px;border-radius:8px;margin:16px 0;\"/>
+          <p><a href=\"https://www.elixins.com\" style=\"color:#43c6ac;font-weight:bold;\">Visit our website to learn more & order now!</a></p>
+        `);
+      });
+      res.redirect('/admindashboard.html');
     });
-    fs.unlinkSync(req.file.path);
-    res.redirect('/admindashboard.html');
+    stream.end(req.file.buffer);
   } catch (err) {
     console.error(err);
     res.status(500).send('Upload failed');
@@ -693,23 +697,25 @@ app.get('/api/business-notes', async (req, res) => {
 app.post('/api/business-notes', upload.array('attachments', 10), async (req, res) => {
   try {
     const { title, content, date, location } = req.body;
-    
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content are required' });
     }
-
     const attachments = [];
-    
     // Upload files to Cloudinary if any
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
-          const result = await cloudinary.uploader.upload(file.path, {
-            folder: 'business-notes',
-            resource_type: 'auto', // Handles images, videos, and raw files
-            public_id: `note-${Date.now()}-${Math.random().toString(36).substring(2)}`
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream({
+              folder: 'business-notes',
+              resource_type: 'auto',
+              public_id: `note-${Date.now()}-${Math.random().toString(36).substring(2)}`
+            }, (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            });
+            stream.end(file.buffer);
           });
-          
           attachments.push({
             filename: file.filename,
             originalName: file.originalname,
@@ -718,16 +724,11 @@ app.post('/api/business-notes', upload.array('attachments', 10), async (req, res
             url: result.secure_url,
             publicId: result.public_id
           });
-          
-          // Clean up local file
-          require('fs').unlinkSync(file.path);
         } catch (uploadError) {
           console.error('Cloudinary upload error:', uploadError);
-          // Continue processing other files even if one fails
         }
       }
     }
-
     // Parse location data if provided
     let locationData = null;
     if (location) {
@@ -1046,7 +1047,7 @@ cron.schedule('0 8,18 * * *', async () => {
       sendEmail(u.email, 'Daily Offers & News', `
         <h2 style="color:#43c6ac;">Hello ${u.name},</h2>
         <p>Check out the latest offers and updates from XIN Investment! Visit our shop for new products and exclusive deals.</p>
-        <p><a href="http://your-website.com" style="color:#43c6ac;font-weight:bold;">Visit Our Shop</a></p>
+  <p><a href="https://www.elixins.com" style="color:#43c6ac;font-weight:bold;">Visit Our Shop</a></p>
       `);
     });
     console.log('Daily marketing emails sent');
